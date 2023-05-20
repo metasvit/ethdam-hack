@@ -7,5 +7,13 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",
     "hardhat": "^2.14.0"
+  },
+  "dependencies": {
+    "@1inch/fusion-sdk": "^0.1.7",
+    "@1inch/limit-order-protocol-contract": "^4.0.0-prerelease-6",
+    "@1inch/permit-signed-approvals-utils": "^1.4.8",
+    "@1inch/solidity-utils": "^2.2.27",
+    "@metamask/eth-sig-util": "^5.1.0",
+    "@openzeppelin/contracts": "^4.8.3"
   }
 }
