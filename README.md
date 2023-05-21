@@ -4,9 +4,9 @@
 
 Aave V2 lending protocol, source of liquidity
 
-## /resolvers
+## /fusion
 
-1inch resolvers, user of liquidity
+1inch fusion, user of liquidity
 
 Test output:
 ```
