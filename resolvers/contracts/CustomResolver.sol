@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 import "@1inch/solidity-utils/contracts/libraries/AddressLib.sol";
-import "./IResolver.sol";
+import "@1inch/solidity-utils/contracts/libraries/SafeERC20.sol";
+import "./interfaces/IResolver.sol";
+import "./interfaces/ISettlement.sol";
+import "./interfaces/ILendingPool.sol";
 
 library Order {
     struct Data {
@@ -22,17 +25,25 @@ library Order {
 contract CustomResolver is IResolver {
     using AddressLib for Address;
     using Order for bytes;
+    using SafeERC20 for IERC20;
 
-    address private immutable _settlement;
+    ISettlement private immutable _settlement;
+    ILendingPool private immutable _lendingPool;
     address private immutable _owner;
 
-    constructor(address settlement) {
+    constructor(ISettlement settlement, ILendingPool lendingPool) {
         _settlement = settlement;
+        _lendingPool = lendingPool;
         _owner = msg.sender;
     }
 
+    function settleOrders(bytes calldata data) public {
+        require(msg.sender == _owner, "Only owner can call this function");
+        _settlement.settleOrders(data);
+    }
+
     function resolveOrders(address resolver, bytes calldata tokensAndAmounts, bytes calldata data) external {
-        require(msg.sender == _settlement, "Only settlement can call this function");
+        require(msg.sender == address(_settlement), "Only settlement can call this function");
         require(resolver == _owner, "Only owner can call this function");
 
         if (data.length > 0) {
@@ -46,7 +57,8 @@ contract CustomResolver is IResolver {
 
         Order.Data[] calldata items = tokensAndAmounts.decode();
         for (uint256 i = 0; i < items.length; i++) {
-            // logic to resolve orders
+            _lendingPool.borrow(items[i].token.get(), items[i].amount, 0, 0, address(this));
+            IERC20(items[i].token.get()).safeTransfer(msg.sender, items[i].amount);
         }
     }
 }
